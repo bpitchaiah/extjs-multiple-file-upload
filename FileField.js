@@ -35,32 +35,93 @@ Ext.util.DomObserver = Ext.extend(Object, {
     }
 });
 
+//File proxy
+Ext.util.File = Ext.extend(Object, {
+    constructor: function(file) {
+        var me = this;
+        me.dom = file;
+        me.getName = function() {
 
-Ext.ux.form.FileField = Ext.extend(Ext.form.Field, {
-    /*plugins: [new Ext.util.DomObserver({
-        change: function(evt, c) {
-            console.debug(evt);
-            console.debug(c);
-            files=c;
-            e=evt;
-        }
-    })]
-    , */autoCreate: {
-        tag: 'input'
-        , type: 'file'
-        , multiple: 'multiple'
-    }
-    , listeners: {
-        afterrender: function(c) {
-            var el = c.el.dom;//HTMLElement
-            x = el;
-            //el.addEventListener('onchange', function() {
-            //    console.debug(arguments);
-            //});
-            el.onchange = function(evt) {
-                console.debug(el.files);
-                console.debug(arguments);
-            };
-        }
+        };
     }
 });
+
+Ext.ux.form.FileField = (function() {
+    var isAvailable = function() {
+        var input = document.createElement('input');
+        input.type = 'file';
+        return ('multiple' in input
+            && typeof File !== 'undefined'
+            && typeof FileReader !== 'undefined'
+            && typeof (new XMLHttpRequest()).upload !== 'undefined');
+    };
+
+    var constructor = function(config) {
+        if (!isAvailable()) {
+            throw 'browser does not support File API';
+        }
+
+        var me = this;
+
+        me.inputId = Ext.id();//id of <input>
+        me.infoId = Ext.id();//id of <div> used to display information (progress bar..etc)
+        me.inputEl = undefined;//<input type="file"> as Ext.Element
+        me.infoEl =  undefined;//<div class="file-field-info"> as Ext.Element
+
+        var getDomInput = function() {
+            return Ext.get(me.inputId).dom;
+        };
+
+        var defaults = {
+            getFileList: function() {
+                return getDomInput().files;
+            }
+            , autoCreate: {
+                tag: 'div'
+                , children: [{
+                    tag: 'input'
+                    , type: 'file'
+                    , id: me.inputId
+                    , multiple: 'multiple'
+                }
+                , {
+                    tag: 'div'
+                    , id: me.infoId
+                    , cls: 'file-field-info'
+                }]
+            }
+            , getRawValue: function() {
+                return getDomInput().value;
+            }
+            , listeners: {
+                afterrender: function(c) {
+                    var input = getDomInput();
+                    me.infoEl = Ext.get(me.infoId);//Ext.Element
+
+                    input.onchange = function(evt) {
+                        var files = input.files;
+                        var i = 0;
+                        var n = files.length;
+                        var file;
+                        me.infoEl.update('');//remove all children
+
+                        while (i < n) {
+                            file = files[i];
+                            console.debug(file);
+                            me.infoEl.createChild({
+                                tag: 'div'
+                                , html: file.fileName
+                            });
+                            i++;
+                        }
+                    };
+                }
+            }
+
+        };
+
+        Ext.ux.form.FileField.superclass.constructor.call(me, Ext.apply(defaults, config));
+    };
+
+    return Ext.extend(Ext.form.TextField, { constructor: constructor });
+})();

@@ -1,8 +1,17 @@
 import twisted
+import pprint
 
 class Simple(twisted.web.resource.Resource):
+    PP = pprint.PrettyPrinter(indent=4)
+
     def render_GET(self, request):
-        return '''hello world'''
+        request.redirect('/demo.html')
+        request.finish()
+
+    def render_POST(self, request):
+        #return '<pre><code>%s</pre></code><a href="/">Back</a>' % self.PP.pformat(request.__dict__)
+        return request.content.read()
+
 
 resource = Simple()
 

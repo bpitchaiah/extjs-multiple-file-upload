@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Multiple File Upload Field Example</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+    <script type="text/javascript">
+var f = function(x) {
+    e=x;
+    console.debug(x);
+};
+jQuery(function() {
+    var el = document.getElementById("input");
+    el.onchange = f;
+});
+    </script>
+</head>
+<body>
+    <form>
+        <input id="input" type="file" multiple="multiple"/>
+    </form>
+</body>
+</html>
